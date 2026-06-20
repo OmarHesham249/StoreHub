@@ -1,0 +1,59 @@
+version: '3.9'
+
+services:
+
+  # ── PostgreSQL ────────────────────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: storehub-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       storehub
+      POSTGRES_USER:     postgres
+      POSTGRES_PASSWORD: postgres123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test:     ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout:  5s
+      retries:  5
+
+  # ── Backend ───────────────────────────────────────────────────────────────
+  backend:
+    build:
+      context:    ./backend
+      dockerfile: Dockerfile
+    container_name: storehub-backend
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      PORT:        5000
+      DB_HOST:     db
+      DB_PORT:     5432
+      DB_NAME:     storehub
+      DB_USER:     postgres
+      DB_PASSWORD: postgres123
+      DB_SSL:      "false"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # ── Frontend ──────────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context:    ./frontend
+      dockerfile: Dockerfile
+    container_name: storehub-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+    name: storehub_postgres_data
