@@ -82,7 +82,14 @@ pipeline {
                 }
             }
         }
-
+        // ── 3.5 Trivy Security Scan ─────────────────────────────────────────
+        stage('Security Scan') {
+            steps {
+                echo 'Scanning images with Trivy...'
+                sh 'trivy image --exit-code 0 --severity HIGH,CRITICAL ${IMAGE_BACKEND}:${IMAGE_TAG}'
+                sh 'trivy image --exit-code 0 --severity HIGH,CRITICAL ${IMAGE_FRONTEND}:${IMAGE_TAG}'
+            }
+        }
         // ── 4. Push to Registry ────────────────────────────────────────────
         stage('Push Images') {
             steps {
