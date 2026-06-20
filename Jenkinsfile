@@ -5,13 +5,13 @@ pipeline {
         // ── Change these to match your registry ────────────────────────────
         // Docker Hub:  'docker.io/yourusername'
         // Nexus:       'nexus-host:8082/repository/docker-hosted'
-        REGISTRY       = 'your-registry'
+        REGISTRY       = 'docker.io/omarhesham249'
         IMAGE_BACKEND  = "${REGISTRY}/storehub-backend"
         IMAGE_FRONTEND = "${REGISTRY}/storehub-frontend"
         IMAGE_TAG      = "${env.GIT_COMMIT?.take(7) ?: env.BUILD_NUMBER}"
 
         // Jenkins Credential ID for the registry (Username + Password)
-        REGISTRY_CREDS = 'registry-credentials'
+        REGISTRY_CREDS = 'docker-cred'
     }
 
     options {
