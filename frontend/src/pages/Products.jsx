@@ -267,10 +267,10 @@ export default function Products() {
             <div className="space-y-4">
               <Field label="Product Name *">
                 <input
-                  value={form.name}
-                  onChange={e => setForm({ ...form, name: e.target.value })}
-                  className={inputCls}
-                  placeholder="e.g. MacBook Pro 16""
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    className={inputCls}
+                    placeholder="e.g. MacBook Pro 16"
                 />
               </Field>
 

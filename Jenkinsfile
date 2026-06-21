@@ -36,7 +36,7 @@ pipeline {
                 stage('Backend') {
                     steps {
                         dir('backend') {
-                            sh 'npm ci'
+                            sh 'npm install'
                             sh 'node -e "require(\'./server.js\')" &'  // quick syntax check
                             sh 'pkill -f "node server.js" || true'
                         }
