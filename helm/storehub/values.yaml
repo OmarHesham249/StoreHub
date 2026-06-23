@@ -71,4 +71,4 @@ database:
 # ── Secrets (Database Password) ───────────────────────────────────────────────
 secrets:
   # اكتب الباسوورد الحقيقي بتاع الـ RDS بين علامات التنصيص
-  dbPassword: "admin12345"
+  dbPassword: "Omar12345"
