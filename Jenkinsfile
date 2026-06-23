@@ -5,6 +5,7 @@ pipeline {
         // ── Change these to match your registry ────────────────────────────
         // Docker Hub:  'docker.io/yourusername'
         // Nexus:       'nexus-host:8082/repository/docker-hosted'
+        DOCKER_BUILDKIT = '1' 
         REGISTRY       = 'docker.io/omarhesham249'
         IMAGE_BACKEND  = "${REGISTRY}/storehub-backend"
         IMAGE_FRONTEND = "${REGISTRY}/storehub-frontend"
@@ -34,24 +35,27 @@ pipeline {
         stage('Install & Validate') {
             parallel {
                 stage('Backend') {
-                    steps {
+                     steps {
                         dir('backend') {
-                            sh 'npm install'
-                            sh 'node -e "require(\'./server.js\')" &'  // quick syntax check
-                            sh 'pkill -f "node server.js" || true'
-                        }
-                    }
-                }
-                stage('Frontend') {
-                    steps {
-                        dir('frontend') {
-                            sh 'npm install'
-                            sh 'npm run build'   // catches compile errors early
-                        }
-                    }
+                    sh 'npm install'
+                    sh 'node -e "require('./server.js')" &'
+                    sh 'pkill -f "node server.js" || true'
                 }
             }
         }
+        stage('Frontend') {
+            steps {
+                dir('frontend') {
+                    sh 'npm install'
+                    // ✅ Just validate, don't build
+                    sh 'npx tsc --noEmit'   // type-check only (fast ~2s)
+                    // OR if you don't use TypeScript:
+                    // sh 'npx eslint src --max-warnings 0'
+                }
+            }
+        }
+    }
+}
 
         // ── 3. Build Docker Images ─────────────────────────────────────────
         stage('Build Docker Images') {

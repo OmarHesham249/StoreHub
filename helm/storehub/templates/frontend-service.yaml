@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "storehub.frontend.name" . }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "storehub.labels" . | nindent 4 }}
+    app: storehub-frontend
+  annotations:
+    # بيقول لـ AWS اعمل Load Balancer ظاهر على الإنترنت
+    service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
+    service.beta.kubernetes.io/aws-load-balancer-type: "external"
+spec:
+  type: {{ .Values.frontend.service.type }}
+
+  ports:
+    - port: {{ .Values.frontend.service.port }}    # 80 من برا
+      targetPort: 80                               # 80 في الـ nginx pod
+      protocol: TCP
+      name: http
+
+  selector:
+    app: storehub-frontend

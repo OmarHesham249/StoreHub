@@ -1,0 +1,6 @@
+apiVersion: v2
+name: storehub
+description: StoreHub Inventory Management - Backend + Frontend on EKS with AWS RDS
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

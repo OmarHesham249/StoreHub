@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "storehub.backend.name" . }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "storehub.labels" . | nindent 4 }}
+    app: storehub-backend
+spec:
+  # عدد الـ pods اللي هتشتغل في نفس الوقت
+  replicas: {{ .Values.backend.replicas }}
+
+  # الـ selector بيقول لـ Deployment "انت مسؤول عن الـ pods دي"
+  selector:
+    matchLabels:
+      app: storehub-backend
+
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1         # ممكن تزيد pod زيادة أثناء الـ update
+      maxUnavailable: 0   # لا توقف pod قديم إلا بعد ما الجديد يقوم
+
+  template:
+    metadata:
+      labels:
+        app: storehub-backend
+    spec:
+      containers:
+        - name: backend
+          # الـ image بتيجي من values.yaml — Jenkins هيغير الـ tag
+          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
+          imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
+
+          ports:
+            - containerPort: 5000
+              protocol: TCP
+
+          # ── Environment Variables ───────────────────────────────────────
+          env:
+            - name: PORT
+              value: {{ .Values.backend.env.PORT | quote }}
+
+            # بيانات الـ RDS — من values.yaml
+            - name: DB_HOST
+              value: {{ .Values.database.host | quote }}
+            - name: DB_PORT
+              value: {{ .Values.backend.env.DB_PORT | quote }}
+            - name: DB_NAME
+              value: {{ .Values.backend.env.DB_NAME | quote }}
+            - name: DB_SSL
+              value: {{ .Values.backend.env.DB_SSL | quote }}
+
+            # الـ credentials بتيجي من الـ Secret — مش من values.yaml
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: storehub-db-secret
+                  key: DB_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: storehub-db-secret
+                  key: DB_PASSWORD
+
+          # ── Resource Limits ─────────────────────────────────────────────
+          resources:
+            {{- toYaml .Values.backend.resources | nindent 12 }}
+
+          # ── Health Checks ────────────────────────────────────────────────
+          # livenessProbe = لو fail → Kubernetes بيقتل الـ pod ويعمله restart
+          livenessProbe:
+            httpGet:
+              path: /api/health   # الـ endpoint المعرف في الكود
+              port: 5000
+            initialDelaySeconds: 15  # استنى 15 ثانية قبل أول check
+            periodSeconds: 20        # بيعمل check كل 20 ثانية
+
+          # readinessProbe = لو fail → Kubernetes مبيبعتلوش traffic لحد ما يجهز
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 10

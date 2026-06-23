@@ -271,7 +271,7 @@ export default function Products() {
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
                     className={inputCls}
                     placeholder="e.g. MacBook Pro 16"
-                />
+                  />
               </Field>
 
               <div className="grid grid-cols-2 gap-3">

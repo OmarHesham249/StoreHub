@@ -1,0 +1,70 @@
+global:
+  # الـ namespace اللي هيتعمل فيه كل حاجة في الـ cluster
+  namespace: storehub
+
+# ── Backend ───────────────────────────────────────────────────────────────────
+backend:
+  image:
+    # الـ repo بتاع الـ image على Docker Hub
+    repository: docker.io/omarhesham249/storehub-backend
+    # الـ Jenkins هيعدل السطر ده تلقائياً بعد كل build
+    tag: "latest"
+    # Always = دايماً اجيب أحدث image حتى لو نفس الـ tag
+    pullPolicy: Always
+
+  # عدد الـ pods — لو واحد وقع التاني بيكمل
+  replicas: 2
+
+  service:
+    # ClusterIP = متاح جوه الـ cluster بس (الـ frontend هو اللي بيتكلم معاه)
+    type: ClusterIP
+    port: 5000
+
+  # الـ limits = الحد الأقصى اللي الـ pod ممكن ياخده
+  # الـ requests = اللي الـ pod بيحجزه من أول ما يقوم
+  resources:
+    requests:
+      cpu: "100m"      # 100 millicore = 0.1 CPU core
+      memory: "128Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+
+  # متغيرات البيئة اللي مش فيها secrets
+  env:
+    PORT: "5000"
+    DB_PORT: "5432"
+    DB_NAME: "storehub"
+    DB_SSL: "true"   # لازم true مع AWS RDS
+
+# ── Frontend ──────────────────────────────────────────────────────────────────
+frontend:
+  image:
+    repository: docker.io/omarhesham249/storehub-frontend
+    # الـ Jenkins هيعدل السطر ده تلقائياً
+    tag: "latest"
+    pullPolicy: Always
+
+  replicas: 2
+
+  service:
+    # LoadBalancer = AWS هيعمل ALB تلقائياً وييجيك public URL
+    type: LoadBalancer
+    port: 80
+
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "64Mi"
+    limits:
+      cpu: "200m"
+      memory: "256Mi"
+
+# ── Database (AWS RDS — External) ─────────────────────────────────────────────
+# الـ DB مش جوه الـ cluster — هي RDS instance خارجية
+# الـ Password بيتخزن في Kubernetes Secret مش هنا
+database:
+  # ← حط الـ RDS endpoint بتاعك هنا
+  host: "ecom-db.ccbyyuweqdjq.us-east-1.rds.amazonaws.com"
+  user: "postgres"
+  name: "storehub"
