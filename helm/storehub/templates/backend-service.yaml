@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "storehub.backend.name" . }}
+  name: backend
   namespace: {{ .Values.global.namespace }}
   labels:
     {{- include "storehub.labels" . | nindent 4 }}
