@@ -3,6 +3,9 @@ kind: Service
 metadata:
   name: {{ include "storehub.frontend.name" . }}
   namespace: {{ .Values.global.namespace }}
+  annotations:                                                        # <-- السطر ده جديد
+    service.beta.kubernetes.io/aws-load-balancer-type: external       # <-- السطر ده بيفوق الـ Controller
+    service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing # <-- السطر ده بيخليه Public
   labels:
     {{- include "storehub.labels" . | nindent 4 }}
     app: storehub-frontend
