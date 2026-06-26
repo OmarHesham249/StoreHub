@@ -2,17 +2,20 @@ pipeline {
     agent any
 
     environment {
-        // ── Change these to match your registry ────────────────────────────
-        // Docker Hub:  'docker.io/yourusername'
-        // Nexus:       'nexus-host:8082/repository/docker-hosted'
+        // ── Registry & Images ──────────────────────────────────────────────
         DOCKER_BUILDKIT = '1' 
         REGISTRY       = 'docker.io/omarhesham249'
         IMAGE_BACKEND  = "${REGISTRY}/storehub-backend"
         IMAGE_FRONTEND = "${REGISTRY}/storehub-frontend"
         IMAGE_TAG      = "${env.GIT_COMMIT?.take(7) ?: env.BUILD_NUMBER}"
 
-        // Jenkins Credential ID for the registry (Username + Password)
+        // ── Credentials IDs ────────────────────────────────────────────────
         REGISTRY_CREDS = 'docker-cred'
+        GITHUB_CREDS   = 'github-cred' // ضفنا ده عشان جينكينز يقدر يعدل في الجيت هب
+
+        // ── Helm Repository (GitOps) ───────────────────────────────────────
+        // حط هنا رابط ريبو الـ Helm بتاعك بدل ده
+        HELM_REPO      = 'github.com/OmarHesham249/StoreHub.git' 
     }
 
     options {
@@ -31,31 +34,29 @@ pipeline {
             }
         }
 
-        // ── 2. Install & Lint ──────────────────────────────────────────────
+        // ── 2. Install & Validate ──────────────────────────────────────────
         stage('Install & Validate') {
             parallel {
                 stage('Backend') {
                      steps {
-                        dir('backend') {
-                    sh 'npm install'
-                    sh 'node -e "require('./server.js')" &'
-                    sh 'pkill -f "node server.js" || true'
+                         dir('backend') {
+                            sh 'npm install'
+                            // تم تصليح الـ Quotes هنا عشان متعملش إيرور
+                            sh 'node -e "require(\'./server.js\')" &'
+                            sh 'pkill -f "node -e" || true'
+                        }
+                    }
+                }
+                stage('Frontend') {
+                    steps {
+                        dir('frontend') {
+                            sh 'npm install'
+                            sh 'npx tsc --noEmit'   
+                        }
+                    }
                 }
             }
         }
-        stage('Frontend') {
-            steps {
-                dir('frontend') {
-                    sh 'npm install'
-                    // ✅ Just validate, don't build
-                    sh 'npx tsc --noEmit'   // type-check only (fast ~2s)
-                    // OR if you don't use TypeScript:
-                    // sh 'npx eslint src --max-warnings 0'
-                }
-            }
-        }
-    }
-}
 
         // ── 3. Build Docker Images ─────────────────────────────────────────
         stage('Build Docker Images') {
@@ -86,7 +87,8 @@ pipeline {
                 }
             }
         }
-        // ── 3.5 Trivy Security Scan ─────────────────────────────────────────
+
+        // ── 3.5 Trivy Security Scan ────────────────────────────────────────
         stage('Security Scan') {
             steps {
                 echo 'Scanning images with Trivy...'
@@ -94,6 +96,7 @@ pipeline {
                 sh 'trivy image --exit-code 0 --severity HIGH,CRITICAL ${IMAGE_FRONTEND}:${IMAGE_TAG}'
             }
         }
+
         // ── 4. Push to Registry ────────────────────────────────────────────
         stage('Push Images') {
             steps {
@@ -112,32 +115,37 @@ pipeline {
             }
         }
 
-        // ── 5. Deploy (main branch only) ───────────────────────────────────
-        stage('Deploy') {
+        // ── 5. Deploy (GitOps via ArgoCD) ──────────────────────────────────
+        stage('GitOps Update') {
             when {
-                branch 'main'
+                branch 'main' // هيعمل Deploy بس لو إنت على الـ main
             }
             steps {
-                echo "Deploying ${IMAGE_TAG} to production..."
-
-                // ── Option A: docker-compose on EC2 via SSH ────────────────
-                // sh """
-                //   ssh -o StrictHostKeyChecking=no ec2-user@your-ec2-ip \
-                //     "cd /opt/storehub && \
-                //      docker-compose pull && \
-                //      docker-compose up -d --no-build"
-                // """
-
-                // ── Option B: kubectl rollout (K3s / EKS) ─────────────────
-                // sh "kubectl set image deployment/storehub-backend  backend=${IMAGE_BACKEND}:${IMAGE_TAG}  -n storehub"
-                // sh "kubectl set image deployment/storehub-frontend frontend=${IMAGE_FRONTEND}:${IMAGE_TAG} -n storehub"
-                // sh "kubectl rollout status deployment/storehub-backend  -n storehub"
-                // sh "kubectl rollout status deployment/storehub-frontend -n storehub"
-
-                // ── Option C: ArgoCD image updater or Helm upgrade ─────────
-                // sh "helm upgrade --install storehub ./helm --set backend.image.tag=${IMAGE_TAG} --set frontend.image.tag=${IMAGE_TAG} -n storehub"
-
-                echo "Uncomment your preferred deploy strategy above."
+                echo "Updating Helm repo with new tag: ${IMAGE_TAG}..."
+                
+                withCredentials([usernamePassword(
+                    credentialsId: env.GITHUB_CREDS, 
+                    usernameVariable: 'GIT_USER', 
+                    passwordVariable: 'GIT_PASS'
+                )]) {
+                    sh """
+                    git config --global user.email "jenkins@storehub.local"
+                    git config --global user.name "Jenkins CI"
+                    
+                    # استنساخ ريبو الـ Helm
+                    git clone https://\${GIT_USER}:\${GIT_PASS}@${HELM_REPO} helm-repo
+                    cd helm-repo
+                    
+                    # تعديل رقم التاج للفرونت والباك في ملف الـ values.yaml
+                    # (تأكد إن مسار الملف جوه الريبو صح)
+                    sed -i "s/tag: .*/tag: '${IMAGE_TAG}'/g" helm/storehub/values.yaml
+                    
+                    # رفع التعديلات لجيت هب
+                    git add helm/storehub/values.yaml
+                    git commit -m "🚀 CI: Update images tag to ${IMAGE_TAG}"
+                    git push origin main
+                    """
+                }
             }
         }
     }
@@ -148,7 +156,7 @@ pipeline {
             cleanWs()
         }
         success {
-            echo "✅ Pipeline succeeded — ${IMAGE_BACKEND}:${IMAGE_TAG}"
+            echo "✅ Pipeline succeeded — Images pushed and GitOps repo updated to ${IMAGE_TAG}"
         }
         failure {
             echo "❌ Pipeline failed — check stage logs above."
