@@ -1,77 +1,390 @@
 # 🛒 StoreHub — 3-Tier DevSecOps Inventory Management System
 
-[![AWS EKS](https://img.shields.io/badge/AWS%20EKS-%23FF9900.svg?style=for-the-badge&logo=amazon-aws&logoColor=white)](https://aws.amazon.com/eks/)
-[![Jenkins](https://img.shields.io/badge/Jenkins-%23D24939.svg?style=for-the-badge&logo=jenkins&logoColor=white)](https://www.jenkins.io/)
-[![ArgoCD](https://img.shields.io/badge/Argo%20CD-%23F3F4F6.svg?style=for-the-badge&logo=argo&logoColor=FF4747)](https://argoproj.github.io/cd/)
-[![Docker](https://img.shields.io/badge/Docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
-[![Helm](https://img.shields.io/badge/Helm-%230F162D.svg?style=for-the-badge&logo=helm&logoColor=white)](https://helm.sh/)
-[![Trivy](https://img.shields.io/badge/Trivy-%234A37A0.svg?style=for-the-badge&logo=aquasecurity&logoColor=white)](https://trivy.dev/)
-[![Nginx](https://img.shields.io/badge/Nginx-%23009639.svg?style=for-the-badge&logo=nginx&logoColor=white)](https://nginx.org/)
+<p align="center">
 
-StoreHub is a full-stack, 3-tier web application designed with a microservices architecture. The infrastructure is deployed on **AWS EKS** (Elastic Kubernetes Service) with high availability. The entire deployment process is automated using **DevSecOps** and **GitOps** best practices.
+[![AWS EKS](https://img.shields.io/badge/AWS%20EKS-FF9900?style=for-the-badge&logo=amazon-aws&logoColor=white)](https://aws.amazon.com/eks/)
+[![Jenkins](https://img.shields.io/badge/Jenkins-D24939?style=for-the-badge&logo=jenkins&logoColor=white)](https://www.jenkins.io/)
+[![ArgoCD](https://img.shields.io/badge/ArgoCD-EF7B4D?style=for-the-badge&logo=argo&logoColor=white)](https://argo-cd.readthedocs.io/)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+[![Kubernetes](https://img.shields.io/badge/Kubernetes-326CE5?style=for-the-badge&logo=kubernetes&logoColor=white)](https://kubernetes.io/)
+[![Helm](https://img.shields.io/badge/Helm-0F1689?style=for-the-badge&logo=helm&logoColor=white)](https://helm.sh/)
+[![Trivy](https://img.shields.io/badge/Trivy-1904DA?style=for-the-badge&logo=aquasecurity&logoColor=white)](https://trivy.dev/)
+[![Nginx](https://img.shields.io/badge/Nginx-009639?style=for-the-badge&logo=nginx&logoColor=white)](https://nginx.org/)
 
----
-
-## 🏗️ System Architecture
-
-The application follows a stable **3-Tier Architecture**:
-1. **Frontend Tier:** A web interface that serves the user experience. It is exposed securely via an **Nginx Reverse Proxy**.
-2. **Backend Tier:** A web API that processes business logic and interacts with the database.
-3. **Database Tier:** A secure database instance used to store and manage inventory data.
-
-### Architecture Diagram
-![StoreHub Architecture](https://github.com/OmarHesham249/StoreHub/blob/main/Screenshots/Project%20Architecture.png)
+</p>
 
 ---
 
-## 🚀 Key Features
+# 📖 Overview
 
-* **🔄 Automated CI/CD:** Complete build, test, scan, and push pipeline automated through Jenkins.
-* **🌐 GitOps Workflow:** Fully managed by **ArgoCD** to automatically sync the cluster state with this repository.
-* **🛡️ Security First (DevSecOps):** Automatic vulnerability scanning of file systems and container images using **Trivy**.
-* **🔀 Load Balancing:** Configured with **AWS Load Balancer Controller** for stable and efficient traffic distribution.
-* **📦 Package Management:** Kubernetes manifests are dynamically structured and managed using **Helm Charts**.
+**StoreHub** is a production-ready **3-Tier Inventory Management System** built using a modern **DevSecOps** workflow on **AWS Elastic Kubernetes Service (EKS)**.
 
----
+The project follows **CI/CD**, **GitOps**, and **Infrastructure Automation** best practices to deliver secure, scalable, and highly available deployments.
 
-## 🛠️ Tech Stack
-
-* **Infrastructure:** AWS EKS, AWS EC2
-* **CI/CD & GitOps:** Jenkins, ArgoCD
-* **Containerization:** Docker, Kubernetes, Helm
-* **Security:** Trivy Scan
-* **Web Server & Proxy:** Nginx
-* **Application Stack:** Node.js, React, PostgreSQL
+It demonstrates how enterprise applications are built, scanned, deployed, and continuously synchronized to Kubernetes with minimal manual intervention.
 
 ---
 
-## 🔄 CI/CD GitOps Pipeline Workflow
+# 🏗️ System Architecture
 
-The pipeline automates the entire software delivery process securely:
+The application is designed using a highly available **3-Tier Architecture**.
 
-1. **Checkout:** Pulls the latest code immediately when a change is pushed to the `main` branch.
-2. **Install & Validate:** Installs dependencies and validates backend/frontend stability concurrently (Parallel execution).
-3. **Build Images:** Builds Docker images for both services and tags them with the unique build number.
-4. **Security Scan:** **Trivy** scans the newly built images for HIGH and CRITICAL vulnerabilities before any push.
-5. **Push Images:** Safe and verified images are pushed to **DockerHub**.
-6. **GitOps Update:** Jenkins automatically updates the image tags inside the `helm/storehub/values.yaml` file. **ArgoCD** detects this change and synchronizes the live cluster instantly.
+### 🔹 Frontend Tier
+- React.js Web Application
+- Exposed through an **Nginx Reverse Proxy**
+- Provides the user interface
 
-### Jenkins Pipeline Stage View
-![Jenkins Pipeline Success](https://github.com/OmarHesham249/StoreHub/blob/main/Screenshots/Jenkins%20Pipeline.png)
+### 🔹 Backend Tier
+- Node.js REST API
+- Handles business logic
+- Communicates securely with PostgreSQL
 
-### ArgoCD Application Status
-![ArgoCD Status](https://github.com/OmarHesham249/StoreHub/blob/main/Screenshots/ArgoCD.png)
+### 🔹 Database Tier
+- PostgreSQL Database
+- Persistent storage for inventory records
+- Internal communication only
 
 ---
 
-## 💻 Access and Configuration
+# 🖼️ Architecture Diagram
 
-External traffic is securely routed to the EKS cluster using an Nginx reverse proxy configured on a separate instance (**StoreHub-Proxy**):
+<p align="center">
+<img src="Screenshots/Project Architecture.png" width="100%">
+</p>
+
+---
+
+# 📂 Repository Structure
+
+```text
+StoreHub/
+│
+├── backend/                 # Node.js API source code & Dockerfile
+├── frontend/                # React.js UI source code & Dockerfile
+│
+├── helm/
+│   └── storehub/            # Helm Chart for Kubernetes Deployment
+│
+├── Screenshots/             # Project screenshots & architecture diagrams
+│
+├── docker-compose.yml       # Local development environment
+├── Jenkinsfile              # CI/CD Pipeline
+└── README.md
+```
+
+---
+
+# 🚀 Key Features
+
+## 🔄 Automated CI/CD
+
+- Fully automated Jenkins Pipeline
+- Build
+- Test
+- Scan
+- Push
+- Deploy
+
+---
+
+## 🌐 GitOps Deployment
+
+- Managed by **ArgoCD**
+- Automatically synchronizes Kubernetes with Git
+- Eliminates manual deployments
+
+---
+
+## 🛡️ DevSecOps Security
+
+Automatic security scanning using **Trivy**
+
+✔ Filesystem Scan
+
+✔ Docker Image Scan
+
+✔ Pipeline stops if HIGH or CRITICAL vulnerabilities are detected.
+
+---
+
+## 📦 Kubernetes Deployment
+
+Application deployment is fully managed using:
+
+- Kubernetes
+- Helm Charts
+- AWS Load Balancer Controller
+
+---
+
+## ⚖️ High Availability
+
+The application runs on:
+
+- AWS Elastic Kubernetes Service (EKS)
+- Multiple Worker Nodes
+- Load Balancing
+- Self-Healing Pods
+
+---
+
+# 🛠️ Technology Stack
+
+| Category | Technologies |
+|-----------|--------------|
+| Cloud | AWS EC2, AWS EKS |
+| Containerization | Docker |
+| Orchestration | Kubernetes |
+| Package Manager | Helm |
+| CI/CD | Jenkins |
+| GitOps | ArgoCD |
+| Security | Trivy |
+| Reverse Proxy | Nginx |
+| Backend | Node.js |
+| Frontend | React.js |
+| Database | PostgreSQL |
+
+---
+
+# 📋 Prerequisites
+
+Before deploying the project, ensure the following tools are installed and configured.
+
+- AWS Account
+- AWS CLI
+- eksctl
+- kubectl
+- Docker
+- Helm v3+
+- Jenkins
+- ArgoCD
+- Trivy
+
+---
+
+# 🔄 CI/CD GitOps Pipeline
+
+The complete software delivery lifecycle is fully automated.
+
+---
+
+## 1️⃣ Checkout
+
+Jenkins automatically pulls the latest source code whenever changes are pushed to the **main** branch.
+
+---
+
+## 2️⃣ Install & Validate
+
+Both applications are processed simultaneously.
+
+- Install dependencies
+- Validate Backend
+- Validate Frontend
+
+Using **Parallel Stages** to reduce execution time.
+
+---
+
+## 3️⃣ Build Docker Images
+
+Docker images are built for:
+
+- Frontend
+- Backend
+
+Each image is tagged using the Git Commit SHA.
+
+---
+
+## 4️⃣ Security Scan
+
+Trivy performs security scanning for:
+
+- Filesystem
+- Docker Images
+
+If HIGH or CRITICAL vulnerabilities are found,
+
+❌ Pipeline Fails.
+
+---
+
+## 5️⃣ Push Images
+
+Verified images are pushed securely to DockerHub.
+
+---
+
+## 6️⃣ GitOps Update
+
+Jenkins automatically updates
+
+```yaml
+helm/storehub/values.yaml
+```
+
+with the latest image tags.
+
+---
+
+## 7️⃣ Automatic Deployment
+
+ArgoCD detects the Git changes and automatically synchronizes the EKS cluster.
+
+No manual deployment is required.
+
+---
+
+# 📊 Pipeline Workflow
+
+```text
+Developer
+     │
+     ▼
+ GitHub Push
+     │
+     ▼
+ Jenkins Pipeline
+     │
+     ├───────────────► Install Dependencies
+     │
+     ├───────────────► Validation
+     │
+     ├───────────────► Docker Build
+     │
+     ├───────────────► Trivy Scan
+     │
+     ├───────────────► Docker Push
+     │
+     └───────────────► Update Helm Values
+                           │
+                           ▼
+                      Git Repository
+                           │
+                           ▼
+                        ArgoCD
+                           │
+                           ▼
+                     AWS EKS Cluster
+```
+
+---
+
+# 📷 Project Screenshots
+
+## Jenkins Pipeline
+
+<p align="center">
+<img src="Screenshots/Jenkins Pipeline.png" width="100%">
+</p>
+
+---
+
+## ArgoCD Application
+
+<p align="center">
+<img src="Screenshots/ArgoCD.png" width="100%">
+</p>
+
+---
+
+# 🌐 External Access
+
+External traffic is routed securely through an **Nginx Reverse Proxy** running on a dedicated EC2 instance.
 
 ```nginx
 server {
     listen 80;
+
     location / {
         proxy_pass http://<WORKER_NODE_IP>:<NODE_PORT>;
     }
 }
+```
+
+Traffic Flow
+
+```text
+User
+   │
+   ▼
+Nginx Reverse Proxy
+   │
+   ▼
+AWS LoadBalancer
+   │
+   ▼
+Kubernetes Service
+   │
+   ▼
+Frontend Pods
+   │
+   ▼
+Backend Pods
+   │
+   ▼
+PostgreSQL
+```
+
+---
+
+# 📈 Future Enhancements
+
+## 📊 Monitoring
+
+- Prometheus
+- Grafana
+- kube-prometheus-stack
+
+---
+
+## 📜 Centralized Logging
+
+Implement:
+
+- Elasticsearch
+- Logstash
+- Kibana
+
+or
+
+- Fluent Bit
+- Elasticsearch
+- Kibana
+
+---
+
+## 🗄️ Managed Database
+
+Replace the in-cluster PostgreSQL Pod with:
+
+- Amazon RDS PostgreSQL
+
+Benefits:
+
+- Automated Backups
+- Multi-AZ Failover
+- Better Scalability
+- Production-Grade Reliability
+
+---
+
+# 👨‍💻 Author
+
+**Omar Hesham**
+
+DevOps & Cloud Engineer
+
+- AWS
+- Kubernetes
+- Jenkins
+- Docker
+- GitOps
+- DevSecOps
+
+---
+
+# ⭐ Support
+
+If you found this project useful, consider giving it a **⭐ Star** on GitHub.
