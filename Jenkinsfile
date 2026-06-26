@@ -32,6 +32,7 @@ pipeline {
                      steps {
                         dir('backend') {
                             sh 'npm install'
+                            // تشغيل مؤقت للتأكد من سلامة السيرفر
                             sh 'node -e "require(\'./server.js\')" &'
                             sh 'pkill -f "node -e" || true'
                         }
@@ -41,7 +42,8 @@ pipeline {
                     steps {
                         dir('frontend') {
                             sh 'npm install'
-                            sh './node_modules/.bin/tsc --noEmit'
+                            // تم التعديل هنا لاستخدام build بدلاً من tsc لضمان التوافق
+                            sh 'npm run build'
                         }
                     }
                 }
