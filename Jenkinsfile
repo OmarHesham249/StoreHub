@@ -105,7 +105,9 @@ pipeline {
 
         stage('GitOps Update') {
             when {
-                expression { return sh(script: 'git rev-parse --abbrev-ref HEAD', returnStdout: true).trim() == 'main' }
+                expression { 
+                    return env.GIT_BRANCH == 'main' || env.GIT_BRANCH == 'origin/main' 
+                }
             }
             steps {
                 echo "Updating Helm repo with new tag: ${IMAGE_TAG}..."
