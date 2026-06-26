@@ -20,7 +20,7 @@ The application follows a stable **3-Tier Architecture**:
 3. **Database Tier:** A secure database instance used to store and manage inventory data.
 
 ### Architecture Diagram
-![StoreHub Architecture](screenshots/architecture-diagram.png)
+![StoreHub Architecture](https://github.com/OmarHesham249/StoreHub/blob/main/Screenshots/Project%20Architecture.png)
 
 ---
 
@@ -60,7 +60,7 @@ The pipeline automates the entire software delivery process securely:
 ![Jenkins Pipeline Success](screenshots/jenkins-pipeline.png)
 
 ### ArgoCD Application Status
-![ArgoCD Status](screenshots/argocd-status.png)
+![ArgoCD Status](https://github.com/OmarHesham249/StoreHub/blob/main/Screenshots/ArgoCD.png)
 
 ---
 
