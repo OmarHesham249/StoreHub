@@ -1,127 +1,77 @@
-# StoreHub — Inventory Management System
+# 🛒 StoreHub — 3-Tier DevSecOps Inventory Management System
 
-A full-stack web application for managing product inventory, built with React, Node.js, and PostgreSQL. Containerised with Docker and automated via Jenkins CI/CD.
+[![AWS EKS](https://img.shields.io/badge/AWS%20EKS-%23FF9900.svg?style=for-the-badge&logo=amazon-aws&logoColor=white)](https://aws.amazon.com/eks/)
+[![Jenkins](https://img.shields.io/badge/Jenkins-%23D24939.svg?style=for-the-badge&logo=jenkins&logoColor=white)](https://www.jenkins.io/)
+[![ArgoCD](https://img.shields.io/badge/Argo%20CD-%23F3F4F6.svg?style=for-the-badge&logo=argo&logoColor=FF4747)](https://argoproj.github.io/cd/)
+[![Docker](https://img.shields.io/badge/Docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+[![Helm](https://img.shields.io/badge/Helm-%230F162D.svg?style=for-the-badge&logo=helm&logoColor=white)](https://helm.sh/)
+[![Trivy](https://img.shields.io/badge/Trivy-%234A37A0.svg?style=for-the-badge&logo=aquasecurity&logoColor=white)](https://trivy.dev/)
+[![Nginx](https://img.shields.io/badge/Nginx-%23009639.svg?style=for-the-badge&logo=nginx&logoColor=white)](https://nginx.org/)
 
-## Tech Stack
+StoreHub is a full-stack, 3-tier web application designed with a microservices architecture. The infrastructure is deployed on **AWS EKS** (Elastic Kubernetes Service) with high availability. The entire deployment process is automated using **DevSecOps** and **GitOps** best practices.
 
-| Layer    | Technology                        |
-|----------|-----------------------------------|
-| Frontend | React 18, Vite, Tailwind CSS      |
-| Backend  | Node.js, Express                  |
-| Database | PostgreSQL (AWS RDS compatible)   |
-| CI/CD    | Jenkins                           |
-| Registry | Docker Hub / Nexus                |
-| Deploy   | Docker Compose / Kubernetes       |
+---
 
-## Project Structure
+## 🏗️ System Architecture
 
-```
-storehub/
-├── backend/
-│   ├── src/
-│   │   ├── controllers/productController.js
-│   │   ├── routes/products.js
-│   │   └── db.js
-│   ├── server.js
-│   ├── package.json
-│   ├── .env.example
-│   └── Dockerfile
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   ├── pages/
-│   │   ├── App.jsx
-│   │   └── main.jsx
-│   ├── nginx.conf
-│   ├── package.json
-│   └── Dockerfile
-├── docker-compose.yml
-├── Jenkinsfile
-└── .gitignore
-```
+The application follows a stable **3-Tier Architecture**:
+1. **Frontend Tier:** A web interface that serves the user experience. It is exposed securely via an **Nginx Reverse Proxy**.
+2. **Backend Tier:** A web API that processes business logic and interacts with the database.
+3. **Database Tier:** A secure database instance used to store and manage inventory data.
 
-## API Endpoints
+### Architecture Diagram
+![StoreHub Architecture](screenshots/architecture-diagram.png)
 
-| Method | Path                   | Description       |
-|--------|------------------------|-------------------|
-| GET    | /api/health            | Health check      |
-| GET    | /api/products/stats    | Dashboard stats   |
-| GET    | /api/products          | List products     |
-| GET    | /api/products/:id      | Get single product|
-| POST   | /api/products          | Create product    |
-| PUT    | /api/products/:id      | Update product    |
-| DELETE | /api/products/:id      | Delete product    |
+---
 
-### Query parameters for GET /api/products
-- `search` — text search on name/description
-- `category` — filter by category (Electronics, Peripherals, etc.)
+## 🚀 Key Features
 
-## Quick Start (Local)
+* **🔄 Automated CI/CD:** Complete build, test, scan, and push pipeline automated through Jenkins.
+* **🌐 GitOps Workflow:** Fully managed by **ArgoCD** to automatically sync the cluster state with this repository.
+* **🛡️ Security First (DevSecOps):** Automatic vulnerability scanning of file systems and container images using **Trivy**.
+* **🔀 Load Balancing:** Configured with **AWS Load Balancer Controller** for stable and efficient traffic distribution.
+* **📦 Package Management:** Kubernetes manifests are dynamically structured and managed using **Helm Charts**.
 
-### Option A — Docker Compose (recommended)
-```bash
-git clone https://github.com/yourusername/storehub.git
-cd storehub
-docker-compose up -d
-```
-App available at `http://localhost`
+---
 
-### Option B — Run services separately
+## 🛠️ Tech Stack
 
-**Backend**
-```bash
-cd backend
-cp .env.example .env   # fill in your DB credentials
-npm install
-npm run dev
-```
+* **Infrastructure:** AWS EKS, AWS EC2
+* **CI/CD & GitOps:** Jenkins, ArgoCD
+* **Containerization:** Docker, Kubernetes, Helm
+* **Security:** Trivy Scan
+* **Web Server & Proxy:** Nginx
+* **Application Stack:** Node.js, React, PostgreSQL
 
-**Frontend**
-```bash
-cd frontend
-npm install
-npm run dev
-# http://localhost:3000
-```
+---
 
-## Environment Variables (Backend)
+## 🔄 CI/CD GitOps Pipeline Workflow
 
-| Variable    | Default      | Description                    |
-|-------------|--------------|--------------------------------|
-| PORT        | 5000         | Backend port                   |
-| DB_HOST     | localhost    | PostgreSQL host (RDS endpoint) |
-| DB_PORT     | 5432         | PostgreSQL port                |
-| DB_NAME     | storehub     | Database name                  |
-| DB_USER     | postgres     | Database user                  |
-| DB_PASSWORD | —            | Database password              |
-| DB_SSL      | false        | Set `true` for AWS RDS         |
+The pipeline automates the entire software delivery process securely:
 
-## Jenkins Pipeline
+1. **Checkout:** Pulls the latest code immediately when a change is pushed to the `main` branch.
+2. **Install & Validate:** Installs dependencies and validates backend/frontend stability concurrently (Parallel execution).
+3. **Build Images:** Builds Docker images for both services and tags them with the unique build number.
+4. **Security Scan:** **Trivy** scans the newly built images for HIGH and CRITICAL vulnerabilities before any push.
+5. **Push Images:** Safe and verified images are pushed to **DockerHub**.
+6. **GitOps Update:** Jenkins automatically updates the image tags inside the `helm/storehub/values.yaml` file. **ArgoCD** detects this change and synchronizes the live cluster instantly.
 
-The `Jenkinsfile` defines 5 stages:
-1. **Checkout** — pulls source from SCM
-2. **Install & Validate** — npm ci + build (parallel)
-3. **Build Docker Images** — builds backend + frontend images (parallel)
-4. **Push Images** — pushes to your registry with `IMAGE_TAG=git-short-sha`
-5. **Deploy** — runs only on `main` branch (SSH, kubectl, or Helm — choose one)
+### Jenkins Pipeline Stage View
+![Jenkins Pipeline Success](screenshots/jenkins-pipeline.png)
 
-### Required Jenkins credentials
-- `registry-credentials` — Username + Password for your Docker registry
+### ArgoCD Application Status
+![ArgoCD Status](screenshots/argocd-status.png)
 
-### Configure in Jenkinsfile
-```groovy
-REGISTRY       = 'your-registry'      // e.g. docker.io/omar or nexus:8082
-REGISTRY_CREDS = 'registry-credentials'
-```
+---
 
-## Features
+## 💻 Access and Configuration
 
-- **Dashboard** — total products, inventory value, low-stock alerts
-- **Products table** — search, filter by category, sort
-- **CRUD** — add/edit/delete with modal dialogs
-- **Live stock badges** — color-coded (green/amber/red)
-- **Responsive** — works on mobile and desktop
+External traffic is securely routed to the EKS cluster using an Nginx reverse proxy configured on a separate instance (**StoreHub-Proxy**):
 
-## License
-
-MIT
+```nginx
+server {
+    listen 80;
+    location / {
+        proxy_pass http://<WORKER_NODE_IP>:<NODE_PORT>;
+    }
+}
