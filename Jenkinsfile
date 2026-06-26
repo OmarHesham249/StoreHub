@@ -105,7 +105,7 @@ pipeline {
 
         stage('GitOps Update') {
             when {
-                branch 'main'
+                branch '*/main'
             }
             steps {
                 echo "Updating Helm repo with new tag: ${IMAGE_TAG}..."
