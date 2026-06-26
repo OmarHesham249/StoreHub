@@ -8,7 +8,7 @@ backend:
     # الـ repo بتاع الـ image على Docker Hub
     repository: docker.io/omarhesham249/storehub-backend
     # الـ Jenkins هيعدل السطر ده تلقائياً بعد كل build
-    tag: 'ec488e4'
+    tag: 'da8b389'
     # Always = دايماً اجيب أحدث image حتى لو نفس الـ tag
     pullPolicy: Always
 
@@ -42,7 +42,7 @@ frontend:
   image:
     repository: docker.io/omarhesham249/storehub-frontend
     # الـ Jenkins هيعدل السطر ده تلقائياً
-    tag: 'ec488e4'
+    tag: 'da8b389'
     pullPolicy: Always
 
   replicas: 2
