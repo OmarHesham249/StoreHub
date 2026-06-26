@@ -57,7 +57,7 @@ The pipeline automates the entire software delivery process securely:
 6. **GitOps Update:** Jenkins automatically updates the image tags inside the `helm/storehub/values.yaml` file. **ArgoCD** detects this change and synchronizes the live cluster instantly.
 
 ### Jenkins Pipeline Stage View
-![Jenkins Pipeline Success](screenshots/jenkins-pipeline.png)
+![Jenkins Pipeline Success](https://github.com/OmarHesham249/StoreHub/blob/main/Screenshots/Jenkins%20Pipeline.png)
 
 ### ArgoCD Application Status
 ![ArgoCD Status](https://github.com/OmarHesham249/StoreHub/blob/main/Screenshots/ArgoCD.png)
